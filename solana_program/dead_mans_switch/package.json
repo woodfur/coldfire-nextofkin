@@ -6,7 +6,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ts-node --project ./tsconfig.json -r ts-node/register ./node_modules/.bin/mocha -t 1000000 'tests/**/*.ts'"
   },
   "keywords": [],
   "author": "",
@@ -14,12 +14,18 @@
   "description": "",
   "devDependencies": {
     "@project-serum/anchor": "^0.26.0",
+    "@solana/web3.js": "^1.95.3",
     "@types/chai": "^4.3.19",
     "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.7",
-    "chai": "^5.1.1"
+    "chai": "^5.1.1",
+    "mocha": "^10.7.3",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   },
-  "dependencies": {
-    "@solana/web3.js": "^1.95.3"
+  "overrides": {
+    "ts-node": "^10.9.2"
   }
+
 }

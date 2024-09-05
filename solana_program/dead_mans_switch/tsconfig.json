@@ -16,6 +16,6 @@
       "forceConsistentCasingInFileNames": true,
       "allowSyntheticDefaultImports": true
     },
-    "include": ["tests/**/*", "target/types/**/*"],
+    "include": ["tests/**/*"],
     "exclude": ["node_modules"]
-  }
+}

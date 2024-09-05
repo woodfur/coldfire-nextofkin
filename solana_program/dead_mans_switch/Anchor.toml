@@ -11,8 +11,9 @@ dead_mans_switch = "GxpMKCELhKsaEAn6dhHwSw2JrNF5DXDyyfYo3zWibdvQ"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "http://localhost:8900"
 wallet = "~/.config/solana/id.json"
+faucet_port = 9901
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npm run test"
