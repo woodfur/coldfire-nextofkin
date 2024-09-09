@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/dead_mans_switch.json`.
  */
 export type DeadMansSwitch = {
-  "address": "CkvxUZnDMJtWCKuhaxeAd9K7ybTE4PwHrtXbbHtoaukV",
+  "address": "93DhYTKpjyw5f6gfxhYCBZhgBZqJgy1xU8uPMzRXa9s1",
   "metadata": {
     "name": "deadMansSwitch",
     "version": "0.1.0",

@@ -6,7 +6,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-basic = "CkvxUZnDMJtWCKuhaxeAd9K7ybTE4PwHrtXbbHtoaukV"
+basic = "93DhYTKpjyw5f6gfxhYCBZhgBZqJgy1xU8uPMzRXa9s1"
 
 [registry]
 url = "https://api.apr.dev"
@@ -16,7 +16,7 @@ cluster = "devnet"
 wallet = "/Users/timothywilliams/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "../node_modules/.bin/nx run anchor:jest"
 
 [test]
 startup_wait = 5000
