@@ -46,7 +46,7 @@ describe("dead_mans_switch", () => {
       .rpc();
 
     // Update the fetch call
-    const account = await program.account.deadMansSwitch.fetch(switchAccount.publicKey) as DeadMansSwitchAccount;
+    const account = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
     expect(account.owner.toString()).to.equal(owner.publicKey.toString());
     expect(account.beneficiary.toString()).to.equal(beneficiary.publicKey.toString());
     expect(account.switchDelay.toNumber()).to.equal(switchDelay.toNumber());

@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 use anchor_lang::solana_program::system_instruction;
 
-declare_id!("AhK8BKtoigzkpU7NLQVgnP1fATRBWr8pVw4GQraNxpDg");
+declare_id!("CkvxUZnDMJtWCKuhaxeAd9K7ybTE4PwHrtXbbHtoaukV");
 
 #[program]
 pub mod dead_mans_switch {
