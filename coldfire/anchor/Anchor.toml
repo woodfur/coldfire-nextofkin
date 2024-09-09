@@ -12,7 +12,7 @@ basic = "93DhYTKpjyw5f6gfxhYCBZhgBZqJgy1xU8uPMzRXa9s1"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/timothywilliams/.config/solana/id.json"
 
 [scripts]
