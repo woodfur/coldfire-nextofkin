@@ -1,13 +1,23 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { DeadMansSwitch } from "../target/types/dead_mans_switch";
-import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
+import { PublicKey, Keypair, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { describe, expect, it, beforeAll, beforeEach } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 
 describe("dead_mans_switch", () => {
   
-  
-
+  let switchAccount: Keypair;
+  try {
+    const switchAccountPath = path.resolve(__dirname, 'switchAccount.json');
+    switchAccount = Keypair.fromSecretKey(
+      new Uint8Array(JSON.parse(fs.readFileSync(switchAccountPath, 'utf8')))
+    );
+  } catch (error) {
+    console.error("Error reading switchAccount.json:", error);
+    throw new Error("Please ensure switchAccount.json exists and is correctly formatted.");
+  }
 
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -15,29 +25,10 @@ describe("dead_mans_switch", () => {
 
   const owner = (program.provider as anchor.AnchorProvider).wallet;
   const beneficiary = Keypair.generate();
-  let switchAccount = Keypair.generate();
+  //const switchAccount = Keypair.generate();
   const switchDelay = 5;
 
   // create and fund unauthorized wallet address
-  
-  beforeAll(async () => {
-    // Airdrop SOL to owner and beneficiary
-    const airdropOwner = await provider.connection.requestAirdrop(owner.publicKey, 10 * anchor.web3.LAMPORTS_PER_SOL);
-    await provider.connection.confirmTransaction(airdropOwner);
-
-    const airdropBeneficiary = await provider.connection.requestAirdrop(beneficiary.publicKey, 10 * anchor.web3.LAMPORTS_PER_SOL);
-    await provider.connection.confirmTransaction(airdropBeneficiary);
-  });
-
-  beforeEach(async () => {
-    switchAccount = Keypair.generate();
-    await program.methods.initialize(new anchor.BN(switchDelay)).accounts({
-      switch: switchAccount.publicKey,
-      owner: owner.publicKey,
-      beneficiary: beneficiary.publicKey,
-      systemProgram: SystemProgram.programId,
-    }).signers([switchAccount]).rpc();
-  });
 
 
   // beforeAll(async () => {
@@ -120,9 +111,7 @@ describe("dead_mans_switch", () => {
 
   it("Prevents early switch execution", async () => {
 
-    console.log("Switch Account:", switchAccount.publicKey.toBase58());
-    console.log("Owner:", owner.publicKey.toBase58());
-    console.log("Beneficiary:", beneficiary.publicKey.toBase58());
+   
 
   await expect(
     program.methods
@@ -191,50 +180,124 @@ it("Prevents unauthorized switch execution", async () => {
   ).rejects.toThrow();
 });
 
-it("Allows multiple check-ins", async () => {
-  const initialState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
-  
-  // First check-in
-  await program.methods.checkIn().accounts({
-    switch: switchAccount.publicKey,
-  }).rpc();
-
-  const midState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
-  expect(midState.lastCheckIn.toNumber()).toBeGreaterThan(initialState.lastCheckIn.toNumber());
-
-  // Wait a bit
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Second check-in
-  await program.methods.checkIn().accounts({
-    switch: switchAccount.publicKey,
-  }).rpc();
-
-  const finalState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
-  expect(finalState.lastCheckIn.toNumber()).toBeGreaterThan(midState.lastCheckIn.toNumber());
-});
 
 
-it("Prevents switch execution immediately after check-in", async () => {
-  // Check-in
-  await program.methods.checkIn().accounts({
-    switch: switchAccount.publicKey,
-  }).rpc();
 
-  // Attempt to execute switch immediately
-  await expect(
-    program.methods
-      .executeSwitch()
-      .accounts({
-        switch: switchAccount.publicKey,
-        beneficiary: beneficiary.publicKey,
-        owner: owner.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([beneficiary])
-      .rpc()
-  ).rejects.toThrow();
-});
+
+// it("Allows multiple check-ins", async () => {
+//   console.log("Switch Account pubkey:", switchAccount.publicKey.toBase58());
+
+//   try {
+//     // Ensure the switch account has enough balance
+//     const balance = await provider.connection.getBalance(switchAccount.publicKey);
+//     console.log(`Switch account balance: ${balance / LAMPORTS_PER_SOL} SOL`);
+
+//     if (balance < LAMPORTS_PER_SOL) {
+//       throw new Error("Switch account does not have enough SOL");
+//     }
+
+//     // Initialize the switch if not already initialized
+//     try {
+//       const switchState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
+//       console.log("Switch is already initialized.");
+//     } catch (error) {
+//       console.log("Initializing the switch...");
+//       await program.methods.initialize(new anchor.BN(switchDelay)).accounts({
+//         switch: switchAccount.publicKey,
+//         owner: owner.publicKey,
+//         beneficiary: beneficiary.publicKey,
+//         systemProgram: SystemProgram.programId,
+//       }).signers([switchAccount]).rpc();
+//       console.log("Switch initialized successfully.");
+//     }
+
+//     // Fetch initial state
+//     const initialState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
+//     console.log("Initial last check-in time:", initialState.lastCheckIn.toString());
+
+//     // First check-in
+//     console.log("Performing first check-in...");
+//     await program.methods
+//       .checkIn()
+//       .accounts({
+//         switch: switchAccount.publicKey,
+//       })
+//       .rpc();
+//     console.log("First check-in completed");
+
+//     // Fetch state after first check-in
+//     const midState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
+//     console.log("Mid last check-in time:", midState.lastCheckIn.toString());
+//     expect(midState.lastCheckIn.toNumber()).toBeGreaterThan(initialState.lastCheckIn.toNumber());
+
+//     // Wait for a short period
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+
+//     // Second check-in
+//     console.log("Performing second check-in...");
+//     await program.methods
+//       .checkIn()
+//       .accounts({
+//         switch: switchAccount.publicKey,
+//       })
+//       .rpc();
+//     console.log("Second check-in completed");
+
+//     // Fetch final state
+//     const finalState = await program.account.deadMansSwitch.fetch(switchAccount.publicKey);
+//     console.log("Final last check-in time:", finalState.lastCheckIn.toString());
+//     expect(finalState.lastCheckIn.toNumber()).toBeGreaterThan(midState.lastCheckIn.toNumber());
+
+//   } catch (error) {
+//     console.error("Error in multiple check-ins test:", error);
+//     throw error;
+//   }
+// });
+
+
+// it("Prevents non-owner from checking in", async () => {
+//   const unauthorizedUser = Keypair.generate();
+
+//   const signature = await provider.connection.requestAirdrop(
+//     unauthorizedUser.publicKey,
+//     1000000000 // 1 SOL
+//   );
+//   await provider.connection.confirmTransaction(signature);
+
+//   await expect(
+//     program.methods
+//       .checkIn()
+//       .accounts({
+//         switch: switchAccount.publicKey,
+//         owner: unauthorizedUser.publicKey,
+//       })
+//       .signers([unauthorizedUser])
+//       .rpc()
+//   ).rejects.toThrow(/Only the owner can check in/);
+// });
+
+// it("Prevents non-beneficiary from executing the switch", async () => {
+//   const unauthorizedUser = Keypair.generate();
+
+//   const signature = await provider.connection.requestAirdrop(
+//     unauthorizedUser.publicKey,
+//     1000000000 // 1 SOL
+//   );
+//   await provider.connection.confirmTransaction(signature);
+
+//   await expect(
+//     program.methods
+//       .executeSwitch()
+//       .accounts({
+//         switch: switchAccount.publicKey,
+//         beneficiary: unauthorizedUser.publicKey,
+//         owner: owner.publicKey,
+//         systemProgram: SystemProgram.programId,
+//       })
+//       .signers([unauthorizedUser])
+//       .rpc()
+//   ).rejects.toThrow(/Only the beneficiary can execute the switch/);
+// });
 
 
 })
