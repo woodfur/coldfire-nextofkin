@@ -268,7 +268,7 @@ it("Prevents unauthorized switch execution", async () => {
 //     program.methods
 //       .checkIn()
 //       .accounts({
-//         switch: switchAccount.publicKey,
+//         switch: switchAccouncleat.publicKey,
 //         owner: unauthorizedUser.publicKey,
 //       })
 //       .signers([unauthorizedUser])

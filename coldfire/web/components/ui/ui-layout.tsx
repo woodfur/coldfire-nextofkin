@@ -25,7 +25,7 @@ export function UiLayout({
   const pathname = usePathname();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col w-full">
       <div className="navbar bg-base-300 text-neutral-content flex-col md:flex-row space-y-2 md:space-y-0">
         <div className="flex-1">
           <Link className="btn btn-ghost normal-case text-xl" href="/">
@@ -52,7 +52,7 @@ export function UiLayout({
       <ClusterChecker>
         <AccountChecker />
       </ClusterChecker>
-      <div className="flex-grow mx-4 lg:mx-auto">
+      <div className="flex-grow">
         <Suspense
           fallback={
             <div className="text-center my-32">
@@ -64,6 +64,8 @@ export function UiLayout({
         </Suspense>
         <Toaster position="bottom-right" />
       </div>
+
+
       <footer className="footer footer-center p-4 bg-base-300 text-base-content">
         <aside>
           <p>
