@@ -69,7 +69,7 @@ const ChartThree: React.FC = () => {
       <div className="mb-9 justify-between gap-4 sm:flex">
         <div>
           <h4 className="text-body-2xlg font-bold text-dark dark:text-white">
-            Used Devices
+            Asset Distribution
           </h4>
         </div>
         <div>

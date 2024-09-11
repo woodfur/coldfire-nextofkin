@@ -30,7 +30,7 @@ export function UiLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="h-full flex flex-col w-full bg-gray-2">
+    <div className="h-full flex flex-col w-full bg-gray-200">
 
 
 
