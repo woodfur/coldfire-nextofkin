@@ -1,6 +1,19 @@
 import { BRAND } from "@/components/types/brand";
 import Image from "next/image";
 
+
+import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+import { IconRefresh } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { ExplorerLink } from '../cluster/cluster-ui';
+import { useGetTokenAccounts } from '../account/account-data-access';
+import { ellipsify } from '../ui/ui-layout';
+
+
+
+
 const brandData: BRAND[] = [
   {
     logo: "/images/brand/brand-01.svg",
@@ -45,6 +58,17 @@ const brandData: BRAND[] = [
 ];
 
 const TableOne = () => {
+
+  const { publicKey } = useWallet();
+  const [showAll, setShowAll] = useState(false);
+  const query = useGetTokenAccounts({ address: publicKey as PublicKey });
+  const client = useQueryClient();
+
+  const items = useMemo(() => {
+    if (showAll) return query.data;
+    return query.data?.slice(0, 5);
+  }, [query.data, showAll]);
+  
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card">
       <h4 className="mb-5.5 text-body-2xlg font-bold text-dark dark:text-white">
@@ -76,7 +100,48 @@ const TableOne = () => {
          
         </div>
 
-        {brandData.map((brand, key) => (
+
+        {items?.map(({ account, pubkey }, key) => (
+          <div
+            className={`grid grid-cols-3 sm:grid-cols-4 ${
+              key === (items.length || 0) - 1
+                ? ""
+                : "border-b border-stroke dark:border-dark-3"
+            }`}
+            key={pubkey.toString()}
+          >
+            <div className="flex items-center gap-3.5 px-2 py-4">
+              <div className="flex-shrink-0">
+                <Image src="/images/placeholder-token.svg" alt="Token" width={48} height={48} />
+              </div>
+              <p className="hidden font-medium text-dark dark:text-white sm:block">
+                {ellipsify(account.data.parsed.info.mint)}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center px-2 py-4">
+              <p className="font-medium text-dark dark:text-white">
+                {account.data.parsed.info.tokenAmount.uiAmount}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center px-2 py-4">
+              <p className="font-medium text-green-light-1">
+                $0.00
+              </p>
+            </div>
+
+            <div className="hidden items-center justify-center px-2 py-4 sm:flex">
+              <p className="font-medium text-dark dark:text-white">
+                <ExplorerLink
+                  label={ellipsify(pubkey.toString())}
+                  path={`account/${pubkey.toString()}`}
+                />
+              </p>
+            </div>
+          </div>
+        ))}
+        {/* {brandData.map((brand, key) => (
           <div
             className={`grid grid-cols-3 sm:grid-cols-5 ${
               key === brandData.length - 1
@@ -114,7 +179,7 @@ const TableOne = () => {
 
             
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

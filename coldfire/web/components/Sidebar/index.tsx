@@ -88,7 +88,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Create Plan",
-        route: "/calendar",
+        route: "/createplan",
       },
       {
         icon: (
@@ -115,7 +115,7 @@ const menuGroups = [
           </svg>
         ),
         label: "Manage Beneficiaries",
-        route: "/profile",
+        route: "/beneficiaries",
       },
       {
         icon: (
