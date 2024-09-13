@@ -8,9 +8,8 @@ import { IconRefresh } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { ExplorerLink } from '../cluster/cluster-ui';
-import { useGetTokenAccounts } from '../account/account-data-access';
+import { useGetBalance, useGetTokenAccounts } from '../account/account-data-access';
 import { ellipsify } from '../ui/ui-layout';
-
 
 
 
@@ -62,6 +61,7 @@ const TableOne = () => {
   const { publicKey } = useWallet();
   const [showAll, setShowAll] = useState(false);
   const query = useGetTokenAccounts({ address: publicKey as PublicKey });
+  const balanceQuery = useGetBalance({ address: publicKey as PublicKey });
   const client = useQueryClient();
 
   const items = useMemo(() => {
@@ -76,22 +76,27 @@ const TableOne = () => {
       </h4>
 
       <div className="flex flex-col">
-        <div className="grid grid-cols-3 sm:grid-cols-5">
+
+
+        <div className="grid grid-cols-3 sm:grid-cols-4">
           <div className="px-2 pb-3.5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               Name
             </h5>
           </div>
+
           <div className="px-2 pb-3.5 text-center">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               Amount
             </h5>
           </div>
+
           <div className="px-2 pb-3.5 text-center">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               Value(USD)
             </h5>
           </div>
+
           <div className="hidden px-2 pb-3.5 text-center sm:block">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
               1h%
@@ -114,9 +119,9 @@ const TableOne = () => {
               <div className="flex-shrink-0">
                 <Image src="/images/placeholder-token.svg" alt="Token" width={48} height={48} />
               </div>
-              <p className="hidden font-medium text-dark dark:text-white sm:block">
+              {/* <p className="hidden font-medium text-dark dark:text-white sm:block">
                 {ellipsify(account.data.parsed.info.mint)}
-              </p>
+              </p> */}
             </div>
 
             <div className="flex items-center justify-center px-2 py-4">
@@ -132,55 +137,31 @@ const TableOne = () => {
             </div>
 
             <div className="hidden items-center justify-center px-2 py-4 sm:flex">
-              <p className="font-medium text-dark dark:text-white">
+              {/* <p className="font-medium text-dark dark:text-white">
                 <ExplorerLink
                   label={ellipsify(pubkey.toString())}
                   path={`account/${pubkey.toString()}`}
                 />
-              </p>
+              </p> */}
             </div>
           </div>
         ))}
-        {/* {brandData.map((brand, key) => (
-          <div
-            className={`grid grid-cols-3 sm:grid-cols-5 ${
-              key === brandData.length - 1
-                ? ""
-                : "border-b border-stroke dark:border-dark-3"
-            }`}
-            key={key}
-          >
-            <div className="flex items-center gap-3.5 px-2 py-4">
-              <div className="flex-shrink-0">
-                <Image src={brand.logo} alt="Brand" width={48} height={48} />
-              </div>
-              <p className="hidden font-medium text-dark dark:text-white sm:block">
-                {brand.name}
-              </p>
-            </div>
 
-            <div className="flex items-center justify-center px-2 py-4">
-              <p className="font-medium text-dark dark:text-white">
-                {brand.visitors}K
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center px-2 py-4">
-              <p className="font-medium text-green-light-1">
-                ${brand.revenues}
-              </p>
-            </div>
-
-            <div className="hidden items-center justify-center px-2 py-4 sm:flex">
-              <p className="font-medium text-dark dark:text-white">
-                {brand.sales}
-              </p>
-            </div>
-
-            
+{(query.data?.length ?? 0) > 5 && (
+          <div className="text-center mt-4">
+            <button
+              className="btn btn-xs btn-outline"
+              onClick={() => setShowAll(!showAll)}
+            >
+              {showAll ? 'Show Less' : 'Show All'}
+            </button>
           </div>
-        ))} */}
+        )}
+
+
       </div>
+
+
     </div>
   );
 };

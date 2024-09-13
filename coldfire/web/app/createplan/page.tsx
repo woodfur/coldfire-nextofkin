@@ -54,7 +54,7 @@ const CreatePlan: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="activationDate" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {/* <label htmlFor="activationDate" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Activation Date
             </label>
             <input
@@ -62,7 +62,7 @@ const CreatePlan: React.FC = () => {
               id="activationDate"
               name="activationDate"
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
+            /> */}
           </div>
 
           <div className="mb-4">
@@ -91,9 +91,9 @@ const CreatePlan: React.FC = () => {
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {/* This should be populated dynamically with actual assets */}
-              <option value="asset1">Asset 1</option>
+              {/* <option value="asset1">Asset 1</option>
               <option value="asset2">Asset 2</option>
-              <option value="asset3">Asset 3</option>
+              <option value="asset3">Asset 3</option> */}
             </select>
           </div>
 
@@ -106,7 +106,7 @@ const CreatePlan: React.FC = () => {
               name="distributionRules"
               rows={4}
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              placeholder="Enter distribution rules"
+              placeholder=""
             ></textarea>
           </div>
 
@@ -119,7 +119,7 @@ const CreatePlan: React.FC = () => {
               name="conditions"
               rows={4}
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              placeholder="Enter activation conditions"
+              placeholder=""
             ></textarea>
           </div>
           <button

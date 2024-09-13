@@ -7,6 +7,8 @@ import ChartTwo from '../Charts/ChartTwo';
 import ChartThree from '../Charts/ChartThree';
 import TableOne from '../Tables/TableOne';
 import ChatCard from '../Chat/ChatCard';
+import walletoverview from '../walletoverview';
+import WalletOverview from '../walletoverview';
 
 const links: { label: string; href: string }[] = [
   { label: 'Solana Docs', href: 'https://docs.solana.com/' },
@@ -25,11 +27,12 @@ export default function DashboardFeature() {
 
     <div className="mt-2 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
        
-        
-      <div className="col-span-12 xl:col-span-8">
+      
+      <div className="col-span-8 xl:col-span-8">
       <TableOne />
       </div>
       <ChatCard />
+      <div />
     </div>
     <div className='mt-4'/>
     <ChartThree />
