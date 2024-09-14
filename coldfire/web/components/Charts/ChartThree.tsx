@@ -12,7 +12,7 @@ const ChartThree: React.FC = () => {
       type: "donut",
     },
     colors: ["#5750F1", "#5475E5", "#8099EC", "#ADBCF2"],
-    labels: ["Desktop", "Tablet", "Mobile", "Unknown"],
+    labels: ["Beneficiary1", "Beneficiary2", "Beneficiary3", "Beneficiary4"],
     legend: {
       show: false,
       position: "bottom",
@@ -89,7 +89,7 @@ const ChartThree: React.FC = () => {
             <div className="flex w-full items-center">
               <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue"></span>
               <p className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> Desktop </span>
+                <span> Beneficiary </span>
                 <span> 65% </span>
               </p>
             </div>
@@ -98,7 +98,7 @@ const ChartThree: React.FC = () => {
             <div className="flex w-full items-center">
               <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light"></span>
               <p className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> Tablet </span>
+                <span> Beneficiary2 </span>
                 <span> 34% </span>
               </p>
             </div>
@@ -107,7 +107,7 @@ const ChartThree: React.FC = () => {
             <div className="flex w-full items-center">
               <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light-2"></span>
               <p className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> Mobile </span>
+                <span> Beneficiary3 </span>
                 <span> 45% </span>
               </p>
             </div>
@@ -116,7 +116,7 @@ const ChartThree: React.FC = () => {
             <div className="flex w-full items-center">
               <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light-3"></span>
               <p className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> Unknown </span>
+                <span> Beneficiary4 </span>
                 <span> 12% </span>
               </p>
             </div>

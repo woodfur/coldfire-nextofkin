@@ -74,6 +74,30 @@ pub mod dead_mans_switch {
 
         Ok(())
     }
+
+    pub fn create_plan(ctx: Context<CreatePlan>, name: String, description: String, plan_type: PlanType, beneficiaries: Vec<Pubkey>, assets: Vec<Pubkey>, distribution_rules: String, activation_conditions: String) -> Result<()> {
+        let plan = &mut ctx.accounts.plan;
+        let owner = &ctx.accounts.owner;
+
+        plan.owner = owner.key();
+        plan.name = name;
+        plan.description = description;
+        plan.plan_type = plan_type;
+        plan.beneficiaries = beneficiaries;
+        plan.assets = assets;
+        plan.distribution_rules = distribution_rules;
+        plan.activation_conditions = activation_conditions;
+        plan.created_at = Clock::get()?.unix_timestamp;
+
+        emit!(PlanCreated {
+            owner: plan.owner,
+            plan_id: plan.key(),
+            name: plan.name.clone(),
+            plan_type: plan.plan_type,
+        });
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -117,12 +141,45 @@ pub struct ExecuteSwitch<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct CreatePlan<'info> {
+    #[account(
+        init,
+        payer = owner,
+        space = 8 + 32 + 64 + 256 + 1 + (32 * 10) + (32 * 10) + 256 + 256 + 8
+    )]
+    pub plan: Account<'info, Plan>,
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
 pub struct DeadMansSwitch {
     pub owner: Pubkey,
     pub beneficiary: Pubkey,
     pub last_check_in: i64,
     pub switch_delay: i64,
+}
+
+
+pub struct Plan {
+    pub owner: Pubkey,
+    pub name: String,
+    pub description: String,
+    pub plan_type: PlanType,
+    pub beneficiaries: Vec<Pubkey>,
+    pub assets: Vec<Pubkey>,
+    pub distribution_rules: String,
+    pub activation_conditions: String,
+    pub created_at: i64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+pub enum PlanType {
+    Inheritance,
+    Emergency,
+    Business,
 }
 
 #[error_code]
@@ -155,4 +212,12 @@ pub struct SwitchExecuted {
     pub beneficiary: Pubkey,
     pub timestamp: i64,
     pub amount_transferred: u64,
+}
+
+#[event]
+pub struct PlanCreated {
+    pub owner: Pubkey,
+    pub plan_id: Pubkey,
+    pub name: String,
+    pub plan_type: PlanType,
 }
