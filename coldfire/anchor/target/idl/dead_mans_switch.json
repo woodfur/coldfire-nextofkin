@@ -35,6 +35,73 @@
       "args": []
     },
     {
+      "name": "create_plan",
+      "discriminator": [
+        77,
+        43,
+        141,
+        254,
+        212,
+        118,
+        41,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "plan",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "plan_type",
+          "type": {
+            "defined": {
+              "name": "PlanType"
+            }
+          }
+        },
+        {
+          "name": "beneficiaries",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "assets",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "distribution_rules",
+          "type": "string"
+        },
+        {
+          "name": "activation_conditions",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "execute_switch",
       "discriminator": [
         253,
@@ -122,6 +189,19 @@
         200,
         93
       ]
+    },
+    {
+      "name": "Plan",
+      "discriminator": [
+        161,
+        231,
+        251,
+        119,
+        2,
+        12,
+        162,
+        2
+      ]
     }
   ],
   "events": [
@@ -136,6 +216,19 @@
         84,
         212,
         150
+      ]
+    },
+    {
+      "name": "PlanCreated",
+      "discriminator": [
+        215,
+        11,
+        135,
+        121,
+        208,
+        119,
+        149,
+        149
       ]
     },
     {
@@ -224,6 +317,103 @@
           {
             "name": "switch_delay",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Plan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "plan_type",
+            "type": {
+              "defined": {
+                "name": "PlanType"
+              }
+            }
+          },
+          {
+            "name": "beneficiaries",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "distribution_rules",
+            "type": "string"
+          },
+          {
+            "name": "activation_conditions",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "plan_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "plan_type",
+            "type": {
+              "defined": {
+                "name": "PlanType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Inheritance"
+          },
+          {
+            "name": "Emergency"
+          },
+          {
+            "name": "Business"
           }
         ]
       }

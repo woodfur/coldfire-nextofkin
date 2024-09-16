@@ -163,6 +163,8 @@ pub struct DeadMansSwitch {
 }
 
 
+#[account]
+#[derive(Default)]
 pub struct Plan {
     pub owner: Pubkey,
     pub name: String,
@@ -175,8 +177,9 @@ pub struct Plan {
     pub created_at: i64,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PlanType {
+    #[default]
     Inheritance,
     Emergency,
     Business,

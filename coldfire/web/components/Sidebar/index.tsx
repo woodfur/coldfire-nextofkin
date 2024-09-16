@@ -87,8 +87,8 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Create Plan",
-        route: "/createplan",
+        label: "Plan",
+        route: "/plan",
       },
       {
         icon: (
