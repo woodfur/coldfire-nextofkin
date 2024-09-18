@@ -1,6 +1,14 @@
 'use client';
 
 import { AppHero } from '../ui/ui-layout';
+import DataStatsOne from '../DataStats/DataStatsOne';
+import ChartOne from '../Charts/ChartOne';
+import ChartTwo from '../Charts/ChartTwo';
+import ChartThree from '../Charts/ChartThree';
+import TableOne from '../Tables/TableOne';
+import ChatCard from '../Chat/ChatCard';
+import walletoverview from '../walletoverview';
+import WalletOverview from '../walletoverview';
 
 const links: { label: string; href: string }[] = [
   { label: 'Solana Docs', href: 'https://docs.solana.com/' },
@@ -15,25 +23,19 @@ const links: { label: string; href: string }[] = [
 
 export default function DashboardFeature() {
   return (
-    <div>
-      <AppHero title="gm" subtitle="Say hi to your new Solana dApp." />
-      <div className="max-w-xl mx-auto py-6 sm:px-6 lg:px-8 text-center">
-        <div className="space-y-2">
-          <p>Here are some helpful links to get you started.</p>
-          {links.map((link, index) => (
-            <div key={index}>
-              <a
-                href={link.href}
-                className="link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {link.label}
-              </a>
-            </div>
-          ))}
-        </div>
+    <>
+
+    <div className="mt-2 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
+       
+      
+      <div className="col-span-8 xl:col-span-8">
+      <TableOne />
       </div>
+      <ChatCard />
+      <div />
     </div>
+    <div className='mt-4'/>
+    <ChartThree />
+  </>
   );
 }

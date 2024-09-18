@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/dead_mans_switch.json`.
  */
 export type DeadMansSwitch = {
-  "address": "CkvxUZnDMJtWCKuhaxeAd9K7ybTE4PwHrtXbbHtoaukV",
+  "address": "66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR",
   "metadata": {
     "name": "deadMansSwitch",
     "version": "0.1.0",
@@ -39,6 +39,73 @@ export type DeadMansSwitch = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "createPlan",
+      "discriminator": [
+        77,
+        43,
+        141,
+        254,
+        212,
+        118,
+        41,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "plan",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "planType",
+          "type": {
+            "defined": {
+              "name": "planType"
+            }
+          }
+        },
+        {
+          "name": "beneficiaries",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "assets",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "distributionRules",
+          "type": "string"
+        },
+        {
+          "name": "activationConditions",
+          "type": "string"
+        }
+      ]
     },
     {
       "name": "executeSwitch",
@@ -128,6 +195,19 @@ export type DeadMansSwitch = {
         200,
         93
       ]
+    },
+    {
+      "name": "plan",
+      "discriminator": [
+        161,
+        231,
+        251,
+        119,
+        2,
+        12,
+        162,
+        2
+      ]
     }
   ],
   "events": [
@@ -142,6 +222,19 @@ export type DeadMansSwitch = {
         84,
         212,
         150
+      ]
+    },
+    {
+      "name": "planCreated",
+      "discriminator": [
+        215,
+        11,
+        135,
+        121,
+        208,
+        119,
+        149,
+        149
       ]
     },
     {
@@ -230,6 +323,103 @@ export type DeadMansSwitch = {
           {
             "name": "switchDelay",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "plan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "planType",
+            "type": {
+              "defined": {
+                "name": "planType"
+              }
+            }
+          },
+          {
+            "name": "beneficiaries",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "assets",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "distributionRules",
+            "type": "string"
+          },
+          {
+            "name": "activationConditions",
+            "type": "string"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "planCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "planId",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "planType",
+            "type": {
+              "defined": {
+                "name": "planType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "planType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "inheritance"
+          },
+          {
+            "name": "emergency"
+          },
+          {
+            "name": "business"
           }
         ]
       }
