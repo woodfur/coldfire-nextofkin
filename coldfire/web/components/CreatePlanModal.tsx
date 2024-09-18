@@ -54,6 +54,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
       alert('Please select at least one beneficiary.');
       return;
     }
+    
     try {
       console.log('Creating plan with data:', formData);
       const planPublicKey = await createPlan({
@@ -164,7 +165,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
             </button>
             <button 
   type="submit" 
-  className="btn btn-primary"
+  className="btn btn-primary text-white"
   disabled={loading || beneficiaries.length === 0 || formData.selectedBeneficiaries.length === 0}
 >
   Create Plan

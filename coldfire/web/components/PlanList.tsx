@@ -10,7 +10,7 @@ const PlanList: React.FC<PlanListProps> = ({ plans }) => {
     <div className="overflow-x-auto">
       <table className="w-full table-auto">
         <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+          <tr className="bg-gray-dark text-gray-200 uppercase text-sm leading-normal">
             <th className="py-3 px-6 text-left">Plan Name</th>
             <th className="py-3 px-6 text-left">Beneficiaries</th>
             <th className="py-3 px-6 text-left">Assets</th>
@@ -18,9 +18,9 @@ const PlanList: React.FC<PlanListProps> = ({ plans }) => {
             <th className="py-3 px-6 text-left">Status</th>
           </tr>
         </thead>
-        <tbody className="text-gray-600 text-sm font-light">
+        <tbody className="text-white-600 text-sm font-light">
           {plans.map((plan) => (
-            <tr key={plan.publicKey} className="border-b border-gray-200 hover:bg-gray-100">
+            <tr key={plan.publicKey} className="border-b border-gray-200">
               <td className="py-3 px-6 text-left whitespace-nowrap">{plan.name}</td>
               <td className="py-3 px-6 text-left">{plan.beneficiaries.length}</td>
               <td className="py-3 px-6 text-left">{plan.assets.length}</td>

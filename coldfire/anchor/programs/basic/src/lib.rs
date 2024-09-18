@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 use anchor_lang::solana_program::system_instruction;
 
-declare_id!("93DhYTKpjyw5f6gfxhYCBZhgBZqJgy1xU8uPMzRXa9s1");
+declare_id!("66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR");
 
 #[program]
 pub mod dead_mans_switch {
@@ -146,7 +146,17 @@ pub struct CreatePlan<'info> {
     #[account(
         init,
         payer = owner,
-        space = 8 + 32 + 64 + 256 + 1 + (32 * 10) + (32 * 10) + 256 + 256 + 8
+        space = 8 + // discriminator
+        32 + // owner: Pubkey
+        (4 + 64) + // name: String (4 bytes for length + max 64 bytes for content)
+        (4 + 256) + // description: String (4 bytes for length + max 256 bytes for content)
+        1 + // plan_type: PlanType (enum)
+        (4 + (32 * 20)) + // beneficiaries: Vec<Pubkey> (4 bytes for length + max 20 beneficiaries)
+        (4 + (32 * 20)) + // assets: Vec<Pubkey> (4 bytes for length + max 20 assets)
+        (4 + 256) + // distribution_rules: String (4 bytes for length + max 256 bytes for content)
+        (4 + 256) + // activation_conditions: String (4 bytes for length + max 256 bytes for content)
+        8 + // created_at: i64
+        200 
     )]
     pub plan: Account<'info, Plan>,
     #[account(mut)]

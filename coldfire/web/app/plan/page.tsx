@@ -51,7 +51,7 @@ const ViewPlans: React.FC = () => {
            <PlanList plans={plans} />
            <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 btn btn-primary"
+              className="ml-5 mt-4 btn btn-primary text-white"
             >
               Add Plan
             </button>
