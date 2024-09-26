@@ -1,5 +1,5 @@
 {
-  "address": "66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR",
+  "address": "BPQ5767xGJKGVt3ww4hEH9Beg5KbW4BpSc3yEinvYb6c",
   "metadata": {
     "name": "dead_mans_switch",
     "version": "0.1.0",
@@ -58,6 +58,9 @@
           "signer": true
         },
         {
+          "name": "switch"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -81,23 +84,19 @@
         },
         {
           "name": "beneficiaries",
-          "type": {
-            "vec": "pubkey"
-          }
+          "type": "pubkey"
         },
         {
           "name": "assets",
-          "type": {
-            "vec": "pubkey"
-          }
+          "type": "pubkey"
         },
         {
-          "name": "distribution_rules",
-          "type": "string"
+          "name": "allocation",
+          "type": "u64"
         },
         {
-          "name": "activation_conditions",
-          "type": "string"
+          "name": "inactivity_period",
+          "type": "i64"
         }
       ]
     },
@@ -232,6 +231,19 @@
       ]
     },
     {
+      "name": "PlanDeleted",
+      "discriminator": [
+        1,
+        61,
+        176,
+        29,
+        106,
+        184,
+        43,
+        164
+      ]
+    },
+    {
       "name": "SwitchExecuted",
       "discriminator": [
         231,
@@ -348,23 +360,15 @@
           },
           {
             "name": "beneficiaries",
-            "type": {
-              "vec": "pubkey"
-            }
+            "type": "pubkey"
           },
           {
             "name": "assets",
-            "type": {
-              "vec": "pubkey"
-            }
+            "type": "pubkey"
           },
           {
-            "name": "distribution_rules",
-            "type": "string"
-          },
-          {
-            "name": "activation_conditions",
-            "type": "string"
+            "name": "allocation",
+            "type": "u64"
           },
           {
             "name": "created_at",
@@ -397,6 +401,22 @@
                 "name": "PlanType"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanDeleted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "plan_id",
+            "type": "pubkey"
           }
         ]
       }

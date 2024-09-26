@@ -4,6 +4,9 @@ import { useDeadMansSwitch } from '@/components/hooks/useDeadMansSwitch';
 import { useGetTokenAccounts } from '@/components/account/account-data-access';
 import { PublicKey } from '@solana/web3.js';
 import { useBeneficiaries } from './hooks/useBeneficiaries';
+import { BN } from '@coral-xyz/anchor';
+
+
 
 interface CreatePlanModalProps {
   isOpen: boolean;
@@ -13,7 +16,7 @@ interface CreatePlanModalProps {
 
 const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPlanCreated }) => {
   const { publicKey } = useWallet();
-  const { createPlan } = useDeadMansSwitch();
+  const { createPlan, initializeSwitch } = useDeadMansSwitch();
   const { data: tokenAccounts } = useGetTokenAccounts({ address: publicKey as PublicKey });
   const { beneficiaries, loading, error } = useBeneficiaries(publicKey?.toBase58());
 
@@ -22,10 +25,44 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    selectedBeneficiaries: [] as string[],
-    assets: [] as string[],
+    selectedBeneficiary: null as PublicKey | null, 
+    allocation: 0,
+    assets: '' as string,
     inactivityPeriod: 30,
   });
+
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (tokenAccounts && selectedAsset) { 
+        const selectedAccount = tokenAccounts.find(account => account.pubkey.toString() === selectedAsset.toString());
+        if (selectedAccount) {
+            setTotalBalance(selectedAccount.account.data.parsed.info.tokenAmount.uiAmount);
+        }
+    }
+}, [tokenAccounts, selectedAsset]);
+
+ const handleAllocationChange = (value: number) => {
+    const newAllocation = Math.max(0, value); 
+
+    if (!selectedAsset) {
+        alert('Please select an asset first.');
+        return;
+    }
+
+    
+    if (newAllocation > totalBalance) {
+        alert(`Cannot allocate more than your total balance of ${totalBalance} for the selected asset.`);
+        return;
+    }
+
+    setFormData(prev => ({
+        ...prev,
+        allocation: newAllocation
+    }));
+};
 
  
 
@@ -35,14 +72,15 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
   };
 
   const handleBeneficiarySelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedAddresses = Array.from(e.target.selectedOptions, option => option.value);
-    setFormData(prev => ({ ...prev, selectedBeneficiaries: selectedAddresses }));
-  };
+    const selectedAddress = e.target.value;
+    setFormData(prev => ({ ...prev, selectedBeneficiary: selectedAddress ? new PublicKey(selectedAddress) : null }));
+};
 
-  const handleAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedAssets = Array.from(e.target.selectedOptions, option => option.value);
-    setFormData(prev => ({ ...prev, assets: selectedAssets }));
-  };
+const handleAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedAsset = e.target.value; 
+  setSelectedAsset(selectedAsset); 
+  setFormData(prev => ({ ...prev, assets: selectedAsset })); 
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,25 +88,63 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
       alert('Please connect your wallet first.');
       return;
     }
-    if (formData.selectedBeneficiaries.length === 0) {
-      alert('Please select at least one beneficiary.');
+
+    if (!formData.name.trim()) {
+      alert('Please enter a plan name.');
+      return;
+    }
+    if (!formData.description.trim()) {
+      alert('Please enter a description.');
+      return;
+    }
+
+    if (!formData.selectedBeneficiary) {
+      alert('Please select a beneficiary.');
       return;
     }
     
     try {
       console.log('Creating plan with data:', formData);
+      console.log('Selected Beneficiaries:', formData.selectedBeneficiary);
+
+      
+      
+
+      const primaryBeneficiary = new PublicKey(formData.selectedBeneficiary);
+
+      const inactivityPeriodSeconds = new BN(formData.inactivityPeriod * 24 * 60 * 60);
+
+    //   const switchPublicKey = await initializeSwitch(formData.inactivityPeriod * 24 * 60 * 60);
+     const switchAccount = await initializeSwitch(inactivityPeriodSeconds, primaryBeneficiary);
+     
+     
+
       const planPublicKey = await createPlan({
         name: formData.name,
         description: formData.description,
         planType: 'Inheritance',
-        beneficiaries: formData.selectedBeneficiaries,
-        assets: formData.assets,
-        distributionRules: JSON.stringify(formData.selectedBeneficiaries.map(address => ({ address, allocation: 100 / formData.selectedBeneficiaries.length }))),
-        activationConditions: `Inactivity period: ${formData.inactivityPeriod} days`,
+        beneficiary: primaryBeneficiary,
+        allocation: new BN(formData.allocation),
+        assets: new PublicKey(formData.assets),
+        switchAccount: switchAccount,
+        inactivityPeriod: inactivityPeriodSeconds,
+        
       });
       console.log('Plan created successfully with public key:', planPublicKey.toString());
+
+      setFormData({
+            name: '',
+            description: '',
+            selectedBeneficiary: null,
+            allocation: 0,
+            assets: '',
+            inactivityPeriod: 30,
+        });
+
       onPlanCreated();
       onClose();
+
+      
     } catch (error) {
       console.error('Error creating plan:', error);
       if (error instanceof Error) {
@@ -92,6 +168,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
             <input
               type="text"
               name="name"
+              placeholder="Give it a name"
               value={formData.name}
               onChange={handleChange}
               className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -102,8 +179,10 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
             <label className="mb-2.5 block font-medium text-black dark:text-white">Description</label>
             <textarea
               name="description"
+              placeholder='Write a passionate note about the plan'
               value={formData.description}
               onChange={handleChange}
+              
               className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
               rows={3}
             />
@@ -111,12 +190,12 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
           <div>
             <label className="mb-2.5 block font-medium text-black dark:text-white">Assets</label>
             <select
-              multiple
+              
               name="assets"
               value={formData.assets}
               onChange={handleAssetChange}
               className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-            >
+            ><option value="">Select an asset</option>
               {tokenAccounts?.map((account) => (
                 <option key={account.pubkey.toString()} value={account.pubkey.toString()}>
                   {account.account.data.parsed.info.mint} - Balance: {account.account.data.parsed.info.tokenAmount.uiAmount}
@@ -125,21 +204,16 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
             </select>
           </div>
           <div>
-            <label className="mb-2.5 block font-medium text-black dark:text-white">Beneficiaries</label>
-            {loading ? (
+              <label className="mb-2.5 block font-medium text-black dark:text-white">Beneficiary</label>
+              {loading ? (
                 <p className="text-gray-500 dark:text-gray-400">Loading beneficiaries...</p>
               ) : error ? (
                 <p className="text-red-500">Error loading beneficiaries: {error.message}</p>
               ) : beneficiaries.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400">No beneficiaries found.</p>
               ) : (
-                <select
-                  multiple
-                  name="beneficiaries"
-                  value={formData.selectedBeneficiaries}
-                  onChange={handleBeneficiarySelection}
-                  className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                >
+                <select onChange={handleBeneficiarySelection} className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary">
+                  <option value="">Select a beneficiary</option>
                   {beneficiaries.map((beneficiary) => (
                     <option key={beneficiary.id} value={beneficiary.walletAddress}>
                       {beneficiary.name} ({beneficiary.walletAddress})
@@ -147,7 +221,19 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
                   ))}
                 </select>
               )}
-          </div>
+            </div>
+          <div>
+              <label className="mb-2.5 block font-medium text-black dark:text-white">Allocation</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="Amount"
+                value={formData.allocation}
+                onChange={(e) => handleAllocationChange(Number(e.target.value))}
+                className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              />
+            </div>
+
           <div>
             <label className="mb-2.5 block font-medium text-black dark:text-white">Inactivity Period (days)</label>
             <input
@@ -155,7 +241,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
               name="inactivityPeriod"
               value={formData.inactivityPeriod}
               onChange={handleChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary appearance-none"
               required
             />
           </div>
@@ -166,7 +252,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
             <button 
   type="submit" 
   className="btn btn-primary text-white"
-  disabled={loading || beneficiaries.length === 0 || formData.selectedBeneficiaries.length === 0}
+  disabled={loading || beneficiaries.length === 0}
 >
   Create Plan
 </button>

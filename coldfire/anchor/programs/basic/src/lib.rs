@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 use anchor_lang::solana_program::system_instruction;
 
-declare_id!("66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR");
+declare_id!("BPQ5767xGJKGVt3ww4hEH9Beg5KbW4BpSc3yEinvYb6c");
 
 #[program]
 pub mod dead_mans_switch {
@@ -75,7 +75,7 @@ pub mod dead_mans_switch {
         Ok(())
     }
 
-    pub fn create_plan(ctx: Context<CreatePlan>, name: String, description: String, plan_type: PlanType, beneficiaries: Vec<Pubkey>, assets: Vec<Pubkey>, distribution_rules: String, activation_conditions: String) -> Result<()> {
+    pub fn create_plan(ctx: Context<CreatePlan>, name: String, description: String, plan_type: PlanType, beneficiaries: Pubkey, assets: Pubkey, allocation: u64, inactivity_period: i64,) -> Result<()> {
         let plan = &mut ctx.accounts.plan;
         let owner = &ctx.accounts.owner;
 
@@ -85,9 +85,16 @@ pub mod dead_mans_switch {
         plan.plan_type = plan_type;
         plan.beneficiaries = beneficiaries;
         plan.assets = assets;
-        plan.distribution_rules = distribution_rules;
-        plan.activation_conditions = activation_conditions;
+        plan.allocation = allocation;
         plan.created_at = Clock::get()?.unix_timestamp;
+
+
+        //initialise switch
+        let switch = &mut ctx.accounts.switch;
+        switch.owner = owner.key();
+        switch.beneficiary = beneficiaries; 
+        switch.last_check_in = Clock::get()?.unix_timestamp;
+        switch.switch_delay = inactivity_period;
 
         emit!(PlanCreated {
             owner: plan.owner,
@@ -96,8 +103,45 @@ pub mod dead_mans_switch {
             plan_type: plan.plan_type,
         });
 
+        emit!(SwitchInitialized {
+            owner: switch.owner,
+            beneficiary: switch.beneficiary,
+            switch_delay: switch.switch_delay,
+        });
+
         Ok(())
     }
+}
+
+pub fn delete_plan(ctx: Context<DeletePlan>) -> Result<()> {
+    let plan = &mut ctx.accounts.plan;
+
+    // Ensure the caller is the owner of the plan
+    require!(plan.owner == ctx.accounts.owner.key(), DeadMansSwitchError::UnauthorizedOwner);
+
+    // Optionally, you can clear the plan's data or just delete the account
+    // Here we will just set the owner to a default value
+    plan.owner = Pubkey::default(); // or you can use `plan.owner = Pubkey::new_unique();` to make it invalid
+
+    emit!(PlanDeleted {
+        owner: plan.owner,
+        plan_id: plan.key(),
+    });
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct DeletePlan<'info> {
+    #[account(mut, has_one = owner)]
+    pub plan: Account<'info, Plan>,
+    pub owner: Signer<'info>,
+}
+
+#[event]
+pub struct PlanDeleted {
+    pub owner: Pubkey,
+    pub plan_id: Pubkey,
 }
 
 #[derive(Accounts)]
@@ -151,16 +195,16 @@ pub struct CreatePlan<'info> {
         (4 + 64) + // name: String (4 bytes for length + max 64 bytes for content)
         (4 + 256) + // description: String (4 bytes for length + max 256 bytes for content)
         1 + // plan_type: PlanType (enum)
-        (4 + (32 * 20)) + // beneficiaries: Vec<Pubkey> (4 bytes for length + max 20 beneficiaries)
-        (4 + (32 * 20)) + // assets: Vec<Pubkey> (4 bytes for length + max 20 assets)
-        (4 + 256) + // distribution_rules: String (4 bytes for length + max 256 bytes for content)
-        (4 + 256) + // activation_conditions: String (4 bytes for length + max 256 bytes for content)
+        32 + // beneficiary: Pubkey
+        32 + // asset: Pubkey
+        8 + // allocation: u64
         8 + // created_at: i64
-        200 
+        200 // extra space for future updates
     )]
     pub plan: Account<'info, Plan>,
     #[account(mut)]
     pub owner: Signer<'info>,
+    pub switch: Account<'info, DeadMansSwitch>,
     pub system_program: Program<'info, System>,
 }
 
@@ -180,10 +224,9 @@ pub struct Plan {
     pub name: String,
     pub description: String,
     pub plan_type: PlanType,
-    pub beneficiaries: Vec<Pubkey>,
-    pub assets: Vec<Pubkey>,
-    pub distribution_rules: String,
-    pub activation_conditions: String,
+    pub beneficiaries: Pubkey,
+    pub assets: Pubkey,
+    pub allocation: u64,
     pub created_at: i64,
 }
 

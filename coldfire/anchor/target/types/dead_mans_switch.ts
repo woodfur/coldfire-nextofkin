@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/dead_mans_switch.json`.
  */
 export type DeadMansSwitch = {
-  "address": "66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR",
+  "address": "BPQ5767xGJKGVt3ww4hEH9Beg5KbW4BpSc3yEinvYb6c",
   "metadata": {
     "name": "deadMansSwitch",
     "version": "0.1.0",
@@ -64,6 +64,9 @@ export type DeadMansSwitch = {
           "signer": true
         },
         {
+          "name": "switch"
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
@@ -87,23 +90,19 @@ export type DeadMansSwitch = {
         },
         {
           "name": "beneficiaries",
-          "type": {
-            "vec": "pubkey"
-          }
+          "type": "pubkey"
         },
         {
           "name": "assets",
-          "type": {
-            "vec": "pubkey"
-          }
+          "type": "pubkey"
         },
         {
-          "name": "distributionRules",
-          "type": "string"
+          "name": "allocation",
+          "type": "u64"
         },
         {
-          "name": "activationConditions",
-          "type": "string"
+          "name": "inactivityPeriod",
+          "type": "i64"
         }
       ]
     },
@@ -238,6 +237,19 @@ export type DeadMansSwitch = {
       ]
     },
     {
+      "name": "planDeleted",
+      "discriminator": [
+        1,
+        61,
+        176,
+        29,
+        106,
+        184,
+        43,
+        164
+      ]
+    },
+    {
       "name": "switchExecuted",
       "discriminator": [
         231,
@@ -354,23 +366,15 @@ export type DeadMansSwitch = {
           },
           {
             "name": "beneficiaries",
-            "type": {
-              "vec": "pubkey"
-            }
+            "type": "pubkey"
           },
           {
             "name": "assets",
-            "type": {
-              "vec": "pubkey"
-            }
+            "type": "pubkey"
           },
           {
-            "name": "distributionRules",
-            "type": "string"
-          },
-          {
-            "name": "activationConditions",
-            "type": "string"
+            "name": "allocation",
+            "type": "u64"
           },
           {
             "name": "createdAt",
@@ -403,6 +407,22 @@ export type DeadMansSwitch = {
                 "name": "planType"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "planDeleted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "planId",
+            "type": "pubkey"
           }
         ]
       }

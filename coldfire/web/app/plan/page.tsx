@@ -34,6 +34,11 @@ const ViewPlans: React.FC = () => {
     fetchPlans();
   };
 
+
+  const handlePlanDeleted = (publicKey: string) => {
+    setPlans((prevPlans) => prevPlans.filter(plan => plan.publicKey !== publicKey));
+  };
+
   return (
     <div className="mx-auto w-full max-w-[970px]">
       <Breadcrumb pageName="View Plans" />
@@ -48,7 +53,7 @@ const ViewPlans: React.FC = () => {
           </div>
         ) : (
           <>
-           <PlanList plans={plans} />
+           <PlanList plans={plans} onPlanDeleted={handlePlanDeleted} />
            <button
               onClick={() => setIsModalOpen(true)}
               className="ml-5 mt-4 btn btn-primary text-white"
