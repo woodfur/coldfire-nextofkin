@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/dead_mans_switch.json`.
  */
 export type DeadMansSwitch = {
-  "address": "BPQ5767xGJKGVt3ww4hEH9Beg5KbW4BpSc3yEinvYb6c",
+  "address": "H6ETDMJrcvhaJnYBEbTkSLjFQbrKTucQvMBPCKh8qpG8",
   "metadata": {
     "name": "deadMansSwitch",
     "version": "0.1.0",
@@ -59,12 +59,14 @@ export type DeadMansSwitch = {
           "signer": true
         },
         {
-          "name": "owner",
+          "name": "switch",
           "writable": true,
           "signer": true
         },
         {
-          "name": "switch"
+          "name": "owner",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -89,11 +91,11 @@ export type DeadMansSwitch = {
           }
         },
         {
-          "name": "beneficiaries",
+          "name": "beneficiary",
           "type": "pubkey"
         },
         {
-          "name": "assets",
+          "name": "asset",
           "type": "pubkey"
         },
         {
@@ -141,44 +143,6 @@ export type DeadMansSwitch = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "switch",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "owner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "beneficiary"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "switchDelay",
-          "type": "i64"
-        }
-      ]
     }
   ],
   "accounts": [
@@ -234,19 +198,6 @@ export type DeadMansSwitch = {
         119,
         149,
         149
-      ]
-    },
-    {
-      "name": "planDeleted",
-      "discriminator": [
-        1,
-        61,
-        176,
-        29,
-        106,
-        184,
-        43,
-        164
       ]
     },
     {
@@ -365,11 +316,11 @@ export type DeadMansSwitch = {
             }
           },
           {
-            "name": "beneficiaries",
+            "name": "beneficiary",
             "type": "pubkey"
           },
           {
-            "name": "assets",
+            "name": "asset",
             "type": "pubkey"
           },
           {
@@ -379,6 +330,10 @@ export type DeadMansSwitch = {
           {
             "name": "createdAt",
             "type": "i64"
+          },
+          {
+            "name": "switch",
+            "type": "pubkey"
           }
         ]
       }
@@ -407,21 +362,13 @@ export type DeadMansSwitch = {
                 "name": "planType"
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "planDeleted",
-      "type": {
-        "kind": "struct",
-        "fields": [
+          },
           {
-            "name": "owner",
+            "name": "asset",
             "type": "pubkey"
           },
           {
-            "name": "planId",
+            "name": "beneficiary",
             "type": "pubkey"
           }
         ]

@@ -15,6 +15,8 @@ const ViewPlans: React.FC = () => {
  const { getPlans } = useDeadMansSwitch();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (publicKey) {
@@ -26,10 +28,20 @@ const ViewPlans: React.FC = () => {
 
   const fetchPlans = async () => {
     if (publicKey) {
-      const fetchedPlans = await getPlans();
-      setPlans(fetchedPlans);
+      setLoading(true);
+      setError(null);
+      try {
+        const fetchedPlans = await getPlans();
+        setPlans(fetchedPlans);
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+        setError('Failed to fetch plans. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
+
   const handlePlanCreated = () => {
     fetchPlans();
   };
