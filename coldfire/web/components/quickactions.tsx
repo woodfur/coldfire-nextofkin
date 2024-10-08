@@ -14,7 +14,7 @@ import { useDeadMansSwitch } from '@/components/hooks/useDeadMansSwitch';
 import CreatePlanModal from './ui/create'
 import { Plan } from '@/components/types/plan';
 import PlanList from './planlist_'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -31,7 +31,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from 'lucide-react';
 
 
-
+interface Beneficiary {
+  id: string;
+  name: string;
+  email: string;
+  walletAddress: string;
+}
 
 export default function QuickActions() {
 
@@ -84,7 +89,6 @@ export default function QuickActions() {
           alert('Failed to add beneficiary. Please try again.');
         } finally {
           setIsLoading(false);
-          setBeneficiaryModalOpen(false);
         }
       };
 
@@ -188,38 +192,55 @@ export default function QuickActions() {
               <DialogDescription>Add a new beneficiary to your plan. Click save when you're done.</DialogDescription>
             </DialogHeader>
             <form onSubmit={BeneficiaryhandleSubmit} className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Enter beneficiary name" required />
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter beneficiary email" required />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="walletAddress">Wallet Address</Label>
-                <Input id="walletAddress" placeholder="Enter wallet address" required />
+                <Input
+                  id="walletAddress"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  required
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setBeneficiaryModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Add Beneficiary</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? 'Adding...' : 'Add Beneficiary'}
+                </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
 
         <Dialog open={planModalOpen} onOpenChange={setPlanModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full"><ClockIcon className="mr-2 h-4 w-4" /> Create Plan</Button>
+        <DialogTrigger asChild>
+            <Button className="w-full"><PlusIcon className="mr-2 h-4 w-4" /> Create New Plan</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>Create Plan</DialogTitle>
-              <DialogDescription>Set up a new inheritance plan. Fill in the details below.</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+      <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Create New Inheritance Plan</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Plan Name</Label>
             <Input
@@ -306,8 +327,20 @@ export default function QuickActions() {
             />
           </div>
         </form>
-          </DialogContent>
-        </Dialog>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setPlanModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            onClick={handleSubmit}
+            disabled={loading || beneficiaries.length === 0}
+          >
+            Create Plan
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
       </CardContent>
     </Card>
   )

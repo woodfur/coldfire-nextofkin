@@ -56,6 +56,7 @@ module.exports = {
         },
         brandButton: "#6238CB",
         brandText: "#1C284E",
+        mutedbuttton: "#DEDBE6",
       },
       borderRadius: {
         lg: "var(--radius)",
