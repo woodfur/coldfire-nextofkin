@@ -71,7 +71,7 @@ export default function InheritancePlans() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manage Inheritance Plans</CardTitle>
+        <CardTitle className='text-brandText'>Manage Inheritance Plans</CardTitle>
       </CardHeader>
       <CardContent>
       <PlanList plans={plans} onPlanDeleted={handlePlanDeleted} />
