@@ -48,7 +48,7 @@ export function TabsTrigger({ value, children, className = '' }: TabsTriggerProp
     <button
       className={`px-4 py-2 rounded-md ${
         activeTab === value
-          ? 'bg-primary text-primary-foreground'
+          ? 'bg-brandButton text-primary-foreground'
           : 'bg-muted text-muted-foreground'
       } ${className}`}
       onClick={() => setActiveTab(value)}
