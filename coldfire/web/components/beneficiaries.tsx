@@ -92,6 +92,7 @@ export default function Beneficiaries() {
       <CardHeader>
         <CardTitle>Manage Beneficiaries</CardTitle>
       </CardHeader>
+      
       <CardContent>
         <ul className="space-y-2">
           {beneficiaries.map((beneficiary, index) => (
@@ -103,6 +104,7 @@ export default function Beneficiaries() {
         </ul>
       </CardContent>
       <CardFooter>
+      { publicKey ? (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><PlusIcon className="mr-2 h-4 w-4" /> Add Beneficiary</Button>
@@ -152,6 +154,9 @@ export default function Beneficiaries() {
             </form>
           </DialogContent>
         </Dialog>
+      ) : (
+          <p className="text-sm text-muted-foreground">Connect your wallet to add beneficiaries</p>
+        )}
       </CardFooter>
 
       {showSuccessPopup && (
@@ -159,6 +164,8 @@ export default function Beneficiaries() {
           Beneficiary added successfully!
         </div>
       )}
+
+      
     </Card>
   )
 }

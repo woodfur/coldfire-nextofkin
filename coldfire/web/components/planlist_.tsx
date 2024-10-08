@@ -12,15 +12,15 @@ interface PlanListProps {
 }
 
 const PlanList: React.FC<PlanListProps> = ({ plans, onPlanDeleted }) => {
-  if (plans.length === 0) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-xl font-medium text-muted-foreground mb-4">
-          No plans yet. Click "Add Plan" to create one.
-        </p>
-      </div>
-    );
-  }
+  // if (plans.length === 0) {
+  //   return (
+  //     <div className="text-center py-4">
+  //       <p className="text-xl font-medium text-muted-foreground mb-4">
+  //         No plans yet. Click connect wallet and click "Add Plan" to create one.
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <Table>

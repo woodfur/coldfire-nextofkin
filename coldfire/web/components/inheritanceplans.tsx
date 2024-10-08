@@ -78,14 +78,20 @@ export default function InheritancePlans() {
       <PlanList plans={plans} onPlanDeleted={handlePlanDeleted} />
       </CardContent>
       <CardFooter>
+      {publicKey ? (
+        <>
+        
       <Button onClick={openModal}><PlusIcon className="mr-2 h-4 w-4" /> Create New Plan</Button>
       <CreatePlanModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
               onPlanCreated={handlePlanCreated}
             />
-            
-        
+
+        </>  
+    ) : (
+        <p className="text-sm text-muted-foreground">Connect your wallet to create and manage inheritance plans</p>
+      )}
       </CardFooter>
     </Card>
   )
