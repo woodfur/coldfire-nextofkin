@@ -52,7 +52,7 @@ export default function Beneficiaries() {
       const fetchBeneficiaries = async () => {
         if (publicKey) {
           const fetchedBeneficiaries = await getBeneficiaries(publicKey.toString());
-          setBeneficiaries(fetchedBeneficiaries);
+          setBeneficiaries(fetchedBeneficiaries as Beneficiary[]);
         }
       };
 

@@ -16,8 +16,7 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 
 import { useState } from 'react';
-
-
+import Image from 'next/image';
 //New UI imports 
 
 
@@ -33,6 +32,8 @@ import InheritancePlans from '../../components/inheritanceplans'
 
 
 
+
+
 export function UiLayout({
   children,
   links,
@@ -43,10 +44,22 @@ export function UiLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+
+  const logourl = require('../../public/welt-01.png');
+
+
   return (
     <div className="container mx-auto p-4">
 
-
+<header className="flex items-center justify-between mb-8">
+  
+<Image
+            src={logourl}
+            alt="Project Logo"
+            width={200} 
+            height={150} 
+          />
+</header>
 
 <>
 <h1 className="text-2xl font-bold mb-4">Inheritance Plan Dashboard</h1>
@@ -62,7 +75,7 @@ export function UiLayout({
       
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Manage Your Inheritance Plan</CardTitle>
+          <CardTitle className='text-brandText'>Manage Your Inheritance Plan</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="beneficiaries">

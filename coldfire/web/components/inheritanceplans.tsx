@@ -7,7 +7,6 @@ import { PlusIcon } from 'lucide-react'
 
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletButton } from '@/components/solana/solana-provider';
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useDeadMansSwitch } from '@/components/hooks/useDeadMansSwitch';
 
 import CreatePlanModal from './ui/create'
@@ -72,7 +71,7 @@ export default function InheritancePlans() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manage Inheritance Plans</CardTitle>
+        <CardTitle className='text-brandText'>Manage Inheritance Plans</CardTitle>
       </CardHeader>
       <CardContent>
       <PlanList plans={plans} onPlanDeleted={handlePlanDeleted} />

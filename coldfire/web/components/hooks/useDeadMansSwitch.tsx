@@ -4,8 +4,9 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import idl from '../../../anchor/target/idl/dead_mans_switch.json';
 import { DeadMansSwitch } from '../../../anchor/target/types/dead_mans_switch';
 import { sendAndConfirmTransaction } from '@solana/web3.js';
+import {getBasicProgram} from "@coldfire/anchor"
 
-import {Plan } from '../types/plan';
+import {Plan, PlanType } from '../types/plan';
 import { program } from '@coral-xyz/anchor/dist/cjs/native/system';
 import { fetchTokenMetadata } from '@/components/hooks/useTokenMetadata';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -26,7 +27,7 @@ export function useDeadMansSwitch() {
       { commitment: 'processed' }
     );
     
-    const program = new Program(idl as any, provider);
+    const program = getBasicProgram(provider);
     
     // Add this line to log the program ID
     console.log("Program ID from IDL:", program.programId.toBase58());
@@ -43,12 +44,10 @@ export function useDeadMansSwitch() {
     const switchAccount = web3.Keypair.generate();
   
     await program.methods
-      .initialize(switchDelay)
+      .executeSwitch()
       .accounts({
         switch: switchAccount.publicKey,
         owner: publicKey,
-        beneficiary: beneficiary,
-        systemProgram: web3.SystemProgram.programId,
       })
       .signers([switchAccount])
       .rpc();
@@ -59,7 +58,7 @@ export function useDeadMansSwitch() {
   const createPlan = async (planData: {
     name: string;
     description: string;
-    planType: 'Inheritance' | 'Emergency' | 'Business';
+    planType: PlanType;
     beneficiary: PublicKey;
     allocation: BN,
     asset: PublicKey;
@@ -83,32 +82,21 @@ export function useDeadMansSwitch() {
       try {
         const latestBlockhash = await connection.getLatestBlockhash();
 
-        // const selectedBeneficiaries = planData.beneficiaries.map(b => new PublicKey(b));
-
-      //   if (selectedBeneficiaries.length === 0) {
-      //     throw new Error('No beneficiaries selected. Please select at least one beneficiary.');
-      // }
-      // console.log('Selected Beneficiary:', selectedBeneficiaries[0].toBase58());
   
         const tx = await program.methods
           .createPlan(
             planData.name,
             planData.description,
-            { [planData.planType.toLowerCase()]: {} },
+            planData.planType,
             planData.beneficiary,
             planData.asset,
             planData.allocation,
             planData.inactivityPeriod 
-           
-            
           )
           .accounts({
             plan: planAccount.publicKey,
             owner: publicKey,
             switch: switchAccount.publicKey,
-            beneficiary: planData.beneficiary,
-            asset: planData.asset,
-            systemProgram: web3.SystemProgram.programId,
           })
           .signers([planAccount])
           .transaction();
@@ -144,52 +132,7 @@ export function useDeadMansSwitch() {
     throw new Error('Failed to create plan after multiple attempts');
   };
 
-  const fetchTokenInfo = async (mintAddress: string, connection: Connection) => {
-    try {
-      const mintPublicKey = new PublicKey(mintAddress);
-      const token = new Token(connection, mintPublicKey, TOKEN_PROGRAM_ID, null as any);
-      const mintInfo = await token.getMintInfo();
-      
-      // Fetch token accounts to get the total supply
-      const tokenAccounts = await connection.getTokenLargestAccounts(mintPublicKey);
-      const totalSupply = tokenAccounts.value.reduce((acc, account) => acc + account.amount, BigInt(0));
 
-      return {
-        name: `Token ${mintAddress.slice(0, 4)}...${mintAddress.slice(-4)}`,
-        symbol: 'CUSTOM',
-        decimals: mintInfo.decimals,
-        totalSupply: totalSupply.toString(),
-      };
-    } catch (error) {
-      console.error(`Error fetching token info for ${mintAddress}:`, error);
-      return {
-        name: 'Unknown Token',
-        symbol: 'UNK',
-        decimals: 0,
-        totalSupply: '0',
-      };
-    }
-  };
-
-
-
-  const deletePlan = async (planPublicKey: PublicKey) => {
-    if (!publicKey || !signTransaction) {
-      throw new Error('Wallet not connected or signTransaction not available');
-    }
-  
-    const program = getProgram();
-  
-    await program.methods
-      .deletePlan() 
-      .accounts({
-        plan: planPublicKey,
-        owner: publicKey,
-        systemProgram: web3.SystemProgram.programId,
-      })
-      .rpc();
-  };
-  
 
   const getPlans = async (): Promise<Plan[]> => {
     if (!publicKey) {
@@ -222,8 +165,8 @@ export function useDeadMansSwitch() {
           owner: new PublicKey(planAccount.account.owner),
           name: planAccount.account.name,
           description: planAccount.account.description,
-          planType: planAccount.account.planType.inheritance ? 'Inheritance' : 
-                    planAccount.account.planType.emergency ? 'Emergency' : 'Business',
+          planType: planAccount.account.planType.inheritance ? {inheritance: {}} : 
+                    planAccount.account.planType.emergency ? {emergency: {}} : {business: {}},
           beneficiary: new PublicKey(planAccount.account.beneficiary),
           asset: {
             pubkey: new PublicKey(planAccount.account.asset),
@@ -244,5 +187,5 @@ export function useDeadMansSwitch() {
     }
   };
 
-  return { initializeSwitch, createPlan, getPlans, deletePlan };
+  return { initializeSwitch, createPlan, getPlans };
 }

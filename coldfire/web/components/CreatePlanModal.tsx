@@ -80,7 +80,7 @@ const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ isOpen, onClose, onPl
       const planPublicKey = await createPlan({
         name: formData.name,
         description: formData.description,
-        planType: 'Inheritance',
+        planType: {inheritance: {}},
         beneficiary: formData.selectedBeneficiary,
         asset: new PublicKey(formData.selectedAsset),
         allocation: new BN(formData.allocation),
