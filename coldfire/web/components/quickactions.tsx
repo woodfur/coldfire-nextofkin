@@ -9,7 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { PlusIcon } from 'lucide-react'
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletButton } from '@/components/solana/solana-provider';
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+
 import { useDeadMansSwitch } from '@/components/hooks/useDeadMansSwitch';
 import CreatePlanModal from './ui/create'
 import { Plan } from '@/components/types/plan';
@@ -142,7 +142,7 @@ export default function QuickActions() {
       const planPublicKey = await createPlan({
         name: formData.name,
         description: formData.description,
-        planType: 'Inheritance',
+        planType: {inheritance: {}},
         beneficiary: formData.selectedBeneficiary,
         asset: new PublicKey(formData.selectedAsset),
         allocation: new BN(formData.allocation),
