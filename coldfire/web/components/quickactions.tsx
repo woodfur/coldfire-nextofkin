@@ -175,6 +175,7 @@ export default function QuickActions() {
     }
   };
 
+  const isWalletConnected = !!publicKey;
 
   return (
     <Card>
@@ -184,7 +185,8 @@ export default function QuickActions() {
       <CardContent className="space-y-2">
         <Dialog open={beneficiaryModalOpen} onOpenChange={setBeneficiaryModalOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full"><UserPlusIcon className="mr-2 h-4 w-4" /> Add Beneficiary</Button>
+            <Button className="w-full" disabled={!isWalletConnected} title={!isWalletConnected ? "Please connect your wallet to perform this action" : ""}
+            ><UserPlusIcon className="mr-2 h-4 w-4" /> Add Beneficiary</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -234,7 +236,7 @@ export default function QuickActions() {
 
         <Dialog open={planModalOpen} onOpenChange={setPlanModalOpen}>
         <DialogTrigger asChild>
-            <Button className="w-full"><PlusIcon className="mr-2 h-4 w-4" /> Create New Plan</Button>
+            <Button className="w-full" disabled={!isWalletConnected} title={!isWalletConnected ? "Please connect your wallet to perform this action" : ""}><PlusIcon className="mr-2 h-4 w-4" /> Create New Plan</Button>
           </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col">
         <DialogHeader>
