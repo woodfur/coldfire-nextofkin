@@ -30,8 +30,8 @@ const PlanList: React.FC<PlanListProps> = ({ plans, onPlanDeleted }) => {
           <TableHead>Beneficiary</TableHead>
           <TableHead>Asset</TableHead>
           <TableHead>Allocation</TableHead>
-          <TableHead>Created At</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>Plan ID</TableHead>
+          <TableHead>Delete</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -41,7 +41,7 @@ const PlanList: React.FC<PlanListProps> = ({ plans, onPlanDeleted }) => {
             <TableCell>{plan.beneficiary.toBase58()}</TableCell>
             <TableCell>{ellipsify(plan.asset.pubkey.toBase58())}</TableCell>
             <TableCell>{plan.allocation.toString()}</TableCell>
-            <TableCell>{/* Add created at date if available */}</TableCell>
+            <TableCell>{plan.publicKey}</TableCell>
             <TableCell>
               <Button 
                 size="sm"
