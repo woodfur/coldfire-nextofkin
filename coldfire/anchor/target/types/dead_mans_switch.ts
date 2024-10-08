@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/dead_mans_switch.json`.
  */
 export type DeadMansSwitch = {
-  "address": "66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR",
+  "address": "H6ETDMJrcvhaJnYBEbTkSLjFQbrKTucQvMBPCKh8qpG8",
   "metadata": {
     "name": "deadMansSwitch",
     "version": "0.1.0",
@@ -59,6 +59,11 @@ export type DeadMansSwitch = {
           "signer": true
         },
         {
+          "name": "switch",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "owner",
           "writable": true,
           "signer": true
@@ -86,24 +91,20 @@ export type DeadMansSwitch = {
           }
         },
         {
-          "name": "beneficiaries",
-          "type": {
-            "vec": "pubkey"
-          }
+          "name": "beneficiary",
+          "type": "pubkey"
         },
         {
-          "name": "assets",
-          "type": {
-            "vec": "pubkey"
-          }
+          "name": "asset",
+          "type": "pubkey"
         },
         {
-          "name": "distributionRules",
-          "type": "string"
+          "name": "allocation",
+          "type": "u64"
         },
         {
-          "name": "activationConditions",
-          "type": "string"
+          "name": "inactivityPeriod",
+          "type": "i64"
         }
       ]
     },
@@ -142,44 +143,6 @@ export type DeadMansSwitch = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "switch",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "owner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "beneficiary"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "switchDelay",
-          "type": "i64"
-        }
-      ]
     }
   ],
   "accounts": [
@@ -353,28 +316,24 @@ export type DeadMansSwitch = {
             }
           },
           {
-            "name": "beneficiaries",
-            "type": {
-              "vec": "pubkey"
-            }
+            "name": "beneficiary",
+            "type": "pubkey"
           },
           {
-            "name": "assets",
-            "type": {
-              "vec": "pubkey"
-            }
+            "name": "asset",
+            "type": "pubkey"
           },
           {
-            "name": "distributionRules",
-            "type": "string"
-          },
-          {
-            "name": "activationConditions",
-            "type": "string"
+            "name": "allocation",
+            "type": "u64"
           },
           {
             "name": "createdAt",
             "type": "i64"
+          },
+          {
+            "name": "switch",
+            "type": "pubkey"
           }
         ]
       }
@@ -403,6 +362,14 @@ export type DeadMansSwitch = {
                 "name": "planType"
               }
             }
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
           }
         ]
       }

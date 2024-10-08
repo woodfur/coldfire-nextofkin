@@ -1,12 +1,14 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { Program, AnchorProvider, web3, Idl, ProgramAccount } from '@coral-xyz/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { Program, AnchorProvider, web3, Idl, ProgramAccount, BN } from '@coral-xyz/anchor';
+import { Connection, PublicKey } from '@solana/web3.js';
 import idl from '../../../anchor/target/idl/dead_mans_switch.json';
 import { DeadMansSwitch } from '../../../anchor/target/types/dead_mans_switch';
 import { sendAndConfirmTransaction } from '@solana/web3.js';
 
 import {Plan } from '../types/plan';
 import { program } from '@coral-xyz/anchor/dist/cjs/native/system';
+import { fetchTokenMetadata } from '@/components/hooks/useTokenMetadata';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 
 export function useDeadMansSwitch() {
@@ -17,15 +19,22 @@ export function useDeadMansSwitch() {
     if (!publicKey || !signTransaction || !signAllTransactions) {
       throw new Error('Wallet not connected');
     }
+    
     const provider = new AnchorProvider(
       connection,
       { publicKey, signTransaction, signAllTransactions },
       { commitment: 'processed' }
     );
-    return new Program(idl as any, provider);
+    
+    const program = new Program(idl as any, provider);
+    
+    // Add this line to log the program ID
+    console.log("Program ID from IDL:", program.programId.toBase58());
+    
+    return program;
   };
 
-  const initializeSwitch = async (switchDelay: number) => {
+  const initializeSwitch = async (switchDelay: BN, beneficiary: PublicKey) => {
     if (!publicKey) {
       throw new Error('Wallet not connected');
     }
@@ -34,10 +43,11 @@ export function useDeadMansSwitch() {
     const switchAccount = web3.Keypair.generate();
   
     await program.methods
-      .initializeSwitch(switchDelay)
+      .initialize(switchDelay)
       .accounts({
         switch: switchAccount.publicKey,
         owner: publicKey,
+        beneficiary: beneficiary,
         systemProgram: web3.SystemProgram.programId,
       })
       .signers([switchAccount])
@@ -50,10 +60,10 @@ export function useDeadMansSwitch() {
     name: string;
     description: string;
     planType: 'Inheritance' | 'Emergency' | 'Business';
-    beneficiaries: string[];
-    assets: string[];
-    distributionRules: string;
-    activationConditions: string;
+    beneficiary: PublicKey;
+    allocation: BN,
+    asset: PublicKey;
+    inactivityPeriod: BN; 
   }) => {
     if (!publicKey || !signTransaction) {
       throw new Error('Wallet not connected or signTransaction not available');
@@ -61,27 +71,43 @@ export function useDeadMansSwitch() {
   
     const program = getProgram();
     const planAccount = web3.Keypair.generate();
+    const switchAccount = web3.Keypair.generate();
 
     console.log('planAccount', planAccount.publicKey.toBase58());
+    console.log('switchAccount', switchAccount.publicKey.toBase58());
+
+    
   
     const retryCount = 3;
     for (let i = 0; i < retryCount; i++) {
       try {
         const latestBlockhash = await connection.getLatestBlockhash();
+
+        // const selectedBeneficiaries = planData.beneficiaries.map(b => new PublicKey(b));
+
+      //   if (selectedBeneficiaries.length === 0) {
+      //     throw new Error('No beneficiaries selected. Please select at least one beneficiary.');
+      // }
+      // console.log('Selected Beneficiary:', selectedBeneficiaries[0].toBase58());
   
         const tx = await program.methods
           .createPlan(
             planData.name,
             planData.description,
             { [planData.planType.toLowerCase()]: {} },
-            planData.beneficiaries.map(b => new PublicKey(b)),
-            planData.assets.map(a => new PublicKey(a)),
-            planData.distributionRules,
-            planData.activationConditions
+            planData.beneficiary,
+            planData.asset,
+            planData.allocation,
+            planData.inactivityPeriod 
+           
+            
           )
           .accounts({
             plan: planAccount.publicKey,
             owner: publicKey,
+            switch: switchAccount.publicKey,
+            beneficiary: planData.beneficiary,
+            asset: planData.asset,
             systemProgram: web3.SystemProgram.programId,
           })
           .signers([planAccount])
@@ -89,7 +115,7 @@ export function useDeadMansSwitch() {
   
         tx.recentBlockhash = latestBlockhash.blockhash;
         tx.feePayer = publicKey;
-        tx.partialSign(planAccount);
+        tx.partialSign(planAccount, switchAccount);
   
         const signedTx = await signTransaction(tx);
         const txId = await connection.sendRawTransaction(signedTx.serialize(), {
@@ -118,34 +144,105 @@ export function useDeadMansSwitch() {
     throw new Error('Failed to create plan after multiple attempts');
   };
 
-  const getPlans = async () => {
+  const fetchTokenInfo = async (mintAddress: string, connection: Connection) => {
+    try {
+      const mintPublicKey = new PublicKey(mintAddress);
+      const token = new Token(connection, mintPublicKey, TOKEN_PROGRAM_ID, null as any);
+      const mintInfo = await token.getMintInfo();
+      
+      // Fetch token accounts to get the total supply
+      const tokenAccounts = await connection.getTokenLargestAccounts(mintPublicKey);
+      const totalSupply = tokenAccounts.value.reduce((acc, account) => acc + account.amount, BigInt(0));
+
+      return {
+        name: `Token ${mintAddress.slice(0, 4)}...${mintAddress.slice(-4)}`,
+        symbol: 'CUSTOM',
+        decimals: mintInfo.decimals,
+        totalSupply: totalSupply.toString(),
+      };
+    } catch (error) {
+      console.error(`Error fetching token info for ${mintAddress}:`, error);
+      return {
+        name: 'Unknown Token',
+        symbol: 'UNK',
+        decimals: 0,
+        totalSupply: '0',
+      };
+    }
+  };
+
+
+
+  const deletePlan = async (planPublicKey: PublicKey) => {
+    if (!publicKey || !signTransaction) {
+      throw new Error('Wallet not connected or signTransaction not available');
+    }
+  
+    const program = getProgram();
+  
+    await program.methods
+      .deletePlan() 
+      .accounts({
+        plan: planPublicKey,
+        owner: publicKey,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .rpc();
+  };
+  
+
+  const getPlans = async (): Promise<Plan[]> => {
     if (!publicKey) {
+      console.log('No wallet connected');
       throw new Error('Wallet not connected');
     }
   
-    const program = getProgram() as Program<DeadMansSwitch>;
-    const plans = await program.account.plan.all([
-      {
-        memcmp: {
-          offset: 8, // Discriminator
-          bytes: publicKey.toBase58(),
-        },
-      },
-    ]);
+    console.log('Fetching plans for public key:', publicKey.toBase58());
   
-    return plans.map((planAccount: ProgramAccount<any>) => ({
-      publicKey: planAccount.publicKey.toString(),
-      owner: new PublicKey(planAccount.account.owner),
-      name: planAccount.account.name,
-      description: planAccount.account.description,
-      planType: planAccount.account.planType,
-      beneficiaries: planAccount.account.beneficiaries.map((b: string) => new PublicKey(b)),
-      assets: planAccount.account.assets.map((a: string) => new PublicKey(a)),
-      distributionRules: planAccount.account.distributionRules,
-      activationConditions: planAccount.account.activationConditions,
-      createdAt: planAccount.account.createdAt,
-    }));
+    const program = getProgram() as Program<DeadMansSwitch>;
+    
+    try {
+      console.log('Fetching all plan accounts...');
+      const plans = await program.account.plan.all([
+        {
+          memcmp: {
+            offset: 8, // Discriminator
+            bytes: publicKey.toBase58(),
+          },
+        },
+      ]);
+  
+      console.log('Raw plans data:', plans);
+  
+      const processedPlans = plans.map((planAccount: ProgramAccount<any>): Plan => {
+        console.log('Processing plan account:', planAccount.publicKey.toBase58());
+        
+        return {
+          publicKey: planAccount.publicKey.toString(),
+          owner: new PublicKey(planAccount.account.owner),
+          name: planAccount.account.name,
+          description: planAccount.account.description,
+          planType: planAccount.account.planType.inheritance ? 'Inheritance' : 
+                    planAccount.account.planType.emergency ? 'Emergency' : 'Business',
+          beneficiary: new PublicKey(planAccount.account.beneficiary),
+          asset: {
+            pubkey: new PublicKey(planAccount.account.asset),
+            tokenName: 'Unknown', // You might want to fetch this separately
+            tokenType: 'UNK', // You might want to fetch this separately
+          },
+          allocation: new BN(planAccount.account.allocation),
+          createdAt: new BN(planAccount.account.createdAt),
+          switch: new PublicKey(planAccount.account.switch),
+        };
+      });
+  
+      console.log('Processed plans:', processedPlans);
+      return processedPlans;
+    } catch (error) {
+      console.error('Error in getPlans:', error);
+      throw error;
+    }
   };
 
-  return { initializeSwitch, createPlan, getPlans };
+  return { initializeSwitch, createPlan, getPlans, deletePlan };
 }

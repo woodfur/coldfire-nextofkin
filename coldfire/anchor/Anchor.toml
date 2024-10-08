@@ -6,14 +6,17 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-basic = "93DhYTKpjyw5f6gfxhYCBZhgBZqJgy1xU8uPMzRXa9s1"
+basic = "9z8uxjk3xUrsPdhemP4Qzq5dzqhHjZ2x9kP56dm28hcv"
+
+[programs.devnet]
+dead_mans_switch = "H6ETDMJrcvhaJnYBEbTkSLjFQbrKTucQvMBPCKh8qpG8"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"
-wallet = "/Users/timothywilliams/.config/solana/id.json"
+wallet = "/Users/media/.config/solana/id.json"
 
 [scripts]
 test = "../node_modules/.bin/nx run anchor:jest"

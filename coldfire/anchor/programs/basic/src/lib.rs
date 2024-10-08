@@ -2,25 +2,54 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
 use anchor_lang::solana_program::system_instruction;
 
-declare_id!("66r3Thkzo3KsaR3ToBzcEHmiyU5fRmAFxbxGAqLEQiUR");
+declare_id!("H6ETDMJrcvhaJnYBEbTkSLjFQbrKTucQvMBPCKh8qpG8");
 
 #[program]
 pub mod dead_mans_switch {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, switch_delay: i64) -> Result<()> {
-        require!(switch_delay > 0, DeadMansSwitchError::InvalidSwitchDelay);
-
+    pub fn create_plan(
+        ctx: Context<CreatePlan>,
+        name: String,
+        description: String,
+        plan_type: PlanType,
+        beneficiary: Pubkey,
+        asset: Pubkey,
+        allocation: u64,
+        inactivity_period: i64
+    ) -> Result<()> {
+        let plan = &mut ctx.accounts.plan;
         let switch = &mut ctx.accounts.switch;
-        switch.owner = ctx.accounts.owner.key();
-        switch.beneficiary = ctx.accounts.beneficiary.key();
+        let owner = &ctx.accounts.owner;
+
+        plan.owner = owner.key();
+        plan.name = name;
+        plan.description = description;
+        plan.plan_type = plan_type;
+        plan.beneficiary = beneficiary;
+        plan.asset = asset;
+        plan.allocation = allocation;
+        plan.created_at = Clock::get()?.unix_timestamp;
+        plan.switch = switch.key();
+
+        switch.owner = owner.key();
+        switch.beneficiary = beneficiary;
         switch.last_check_in = Clock::get()?.unix_timestamp;
-        switch.switch_delay = switch_delay;
+        switch.switch_delay = inactivity_period;
+
+        emit!(PlanCreated {
+            owner: plan.owner,
+            plan_id: plan.key(),
+            name: plan.name.clone(),
+            plan_type: plan.plan_type,
+            asset: plan.asset,
+            beneficiary: plan.beneficiary,
+        });
 
         emit!(SwitchInitialized {
             owner: switch.owner,
             beneficiary: switch.beneficiary,
-            switch_delay,
+            switch_delay: switch.switch_delay,
         });
 
         Ok(())
@@ -49,7 +78,6 @@ pub mod dead_mans_switch {
             DeadMansSwitchError::SwitchNotTriggered
         );
 
-        // Transfer funds from owner to beneficiary
         let transfer_amount = ctx.accounts.owner.lamports();
         let transfer_instruction = system_instruction::transfer(
             &ctx.accounts.owner.key(),
@@ -74,44 +102,38 @@ pub mod dead_mans_switch {
 
         Ok(())
     }
-
-    pub fn create_plan(ctx: Context<CreatePlan>, name: String, description: String, plan_type: PlanType, beneficiaries: Vec<Pubkey>, assets: Vec<Pubkey>, distribution_rules: String, activation_conditions: String) -> Result<()> {
-        let plan = &mut ctx.accounts.plan;
-        let owner = &ctx.accounts.owner;
-
-        plan.owner = owner.key();
-        plan.name = name;
-        plan.description = description;
-        plan.plan_type = plan_type;
-        plan.beneficiaries = beneficiaries;
-        plan.assets = assets;
-        plan.distribution_rules = distribution_rules;
-        plan.activation_conditions = activation_conditions;
-        plan.created_at = Clock::get()?.unix_timestamp;
-
-        emit!(PlanCreated {
-            owner: plan.owner,
-            plan_id: plan.key(),
-            name: plan.name.clone(),
-            plan_type: plan.plan_type,
-        });
-
-        Ok(())
-    }
 }
 
 #[derive(Accounts)]
-pub struct Initialize<'info> {
+pub struct CreatePlan<'info> {
     #[account(
         init,
         payer = owner,
-        space = 8 + 32 + 32 + 8 + 8
+        space = 8 + // discriminator
+        32 + // owner: Pubkey
+        (4 + 64) + // name: String (4 bytes for length + max 64 bytes for content)
+        (4 + 256) + // description: String (4 bytes for length + max 256 bytes for content)
+        1 + // plan_type: PlanType (enum)
+        32 + // beneficiary: Pubkey
+        32 + // asset: Pubkey
+        8 + // allocation: u64
+        8 + // created_at: i64
+        32 + // switch: Pubkey
+        200 // extra space for future updates
+    )]
+    pub plan: Account<'info, Plan>,
+    #[account(
+        init,
+        payer = owner,
+        space = 8 + // discriminator
+        32 + // owner: Pubkey
+        32 + // beneficiary: Pubkey
+        8 + // last_check_in: i64
+        8 // switch_delay: i64
     )]
     pub switch: Account<'info, DeadMansSwitch>,
     #[account(mut)]
     pub owner: Signer<'info>,
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub beneficiary: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -141,29 +163,6 @@ pub struct ExecuteSwitch<'info> {
     pub system_program: Program<'info, System>,
 }
 
-#[derive(Accounts)]
-pub struct CreatePlan<'info> {
-    #[account(
-        init,
-        payer = owner,
-        space = 8 + // discriminator
-        32 + // owner: Pubkey
-        (4 + 64) + // name: String (4 bytes for length + max 64 bytes for content)
-        (4 + 256) + // description: String (4 bytes for length + max 256 bytes for content)
-        1 + // plan_type: PlanType (enum)
-        (4 + (32 * 20)) + // beneficiaries: Vec<Pubkey> (4 bytes for length + max 20 beneficiaries)
-        (4 + (32 * 20)) + // assets: Vec<Pubkey> (4 bytes for length + max 20 assets)
-        (4 + 256) + // distribution_rules: String (4 bytes for length + max 256 bytes for content)
-        (4 + 256) + // activation_conditions: String (4 bytes for length + max 256 bytes for content)
-        8 + // created_at: i64
-        200 
-    )]
-    pub plan: Account<'info, Plan>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
 #[account]
 pub struct DeadMansSwitch {
     pub owner: Pubkey,
@@ -172,7 +171,6 @@ pub struct DeadMansSwitch {
     pub switch_delay: i64,
 }
 
-
 #[account]
 #[derive(Default)]
 pub struct Plan {
@@ -180,11 +178,11 @@ pub struct Plan {
     pub name: String,
     pub description: String,
     pub plan_type: PlanType,
-    pub beneficiaries: Vec<Pubkey>,
-    pub assets: Vec<Pubkey>,
-    pub distribution_rules: String,
-    pub activation_conditions: String,
+    pub beneficiary: Pubkey,
+    pub asset: Pubkey,
+    pub allocation: u64,
     pub created_at: i64,
+    pub switch: Pubkey,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Default)]
@@ -233,4 +231,6 @@ pub struct PlanCreated {
     pub plan_id: Pubkey,
     pub name: String,
     pub plan_type: PlanType,
+    pub asset: Pubkey,
+    pub beneficiary: Pubkey,
 }
