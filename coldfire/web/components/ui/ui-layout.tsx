@@ -17,22 +17,20 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import { useState } from 'react';
 import Image from 'next/image';
-//New UI imports 
+//New UI imports
 
-
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import ConnectWallet from '../../components/connectwallet'
-import QuickActions from '../../components/quickactions'
-import Beneficiaries from '../../components/beneficiaries'
-import InheritancePlans from '../../components/inheritanceplans'
-
-
-
-
-
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import ConnectWallet from '../../components/connectwallet';
+import QuickActions from '../../components/quickactions';
+import Beneficiaries from '../../components/beneficiaries';
+import InheritancePlans from '../../components/inheritanceplans';
 
 export function UiLayout({
   children,
@@ -44,58 +42,48 @@ export function UiLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-
   const logourl = require('../../public/welt-01.png');
-
 
   return (
     <div className="container mx-auto p-4">
+      <header className="flex items-center justify-between mb-8">
+        <Image src={logourl} alt="Project Logo" width={200} height={150} />
+      </header>
 
-<header className="flex items-center justify-between mb-8">
-  
-<Image
-            src={logourl}
-            alt="Project Logo"
-            width={200} 
-            height={150} 
-          />
-</header>
+      <>
+        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-<>
-<h1 className="text-2xl font-bold mb-4">Inheritance Plan Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="col-span-1 md:col-span-2">
-          <ConnectWallet />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="col-span-1 md:col-span-2">
+            <ConnectWallet />
+          </div>
+          <div className="col-span-1">
+            <QuickActions />
+          </div>
         </div>
-        <div className="col-span-1">
-          <QuickActions />
-        </div>
-      </div>
-      
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className='text-brandText'>Manage Your Inheritance Plan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="beneficiaries">
-            <TabsList className="mb-4">
-              <TabsTrigger value="beneficiaries">Beneficiaries</TabsTrigger>
-              <TabsTrigger value="plans">Inheritance Plans</TabsTrigger>
-            </TabsList>
-            <TabsContent value="beneficiaries">
-              <Beneficiaries />
-            </TabsContent>
-            <TabsContent value="plans">
-              <InheritancePlans />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </>
 
-
-    
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-brandText">
+              Manage Your Inheritance Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="beneficiaries">
+              <TabsList className="mb-4">
+                <TabsTrigger value="beneficiaries">Beneficiaries</TabsTrigger>
+                <TabsTrigger value="plans">Inheritance Plans</TabsTrigger>
+              </TabsList>
+              <TabsContent value="beneficiaries">
+                <Beneficiaries />
+              </TabsContent>
+              <TabsContent value="plans">
+                <InheritancePlans />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </>
     </div>
   );
 }
